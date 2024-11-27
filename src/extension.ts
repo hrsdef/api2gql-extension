@@ -7,6 +7,7 @@ import { ApiDoc } from './utils/types';
 
 const RESOLVER_IMPORTS = [
     "import { Query, Ctx, Args, Resolver } from 'type-graphql';",
+    "import { RequestParams } from './typeDefs';",
     "import { requestAPI } from '../../utils/request';",
     "import { Context } from 'overlord-server';"
 ].join('\n');
