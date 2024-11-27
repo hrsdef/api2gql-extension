@@ -1,44 +1,76 @@
 import * as vscode from 'vscode';
-import { Api1GqlGenerator } from './generator';
+import * as path from 'path';
+import { GqlGenerator } from './utils/gqlGenerator';
+import { ResolverGenerator } from './utils/resolverGenerator';
+import { TypeDefsGenerator } from './utils/typeDefsGenerator';
+import { ApiDoc } from './utils/types';
+
+const RESOLVER_IMPORTS = [
+    "import { Query, Ctx, Args, Resolver } from 'type-graphql';",
+    "import { requestAPI } from '../../utils/request';",
+    "import { Context } from 'overlord-server';"
+].join('\n');
+
+const TYPEDEFS_IMPORTS = [
+    "import { Field, ObjectType, ArgsType, InputType } from 'type-graphql';"
+].join('\n');
 
 export function activate(context: vscode.ExtensionContext) {
-    let disposable = vscode.commands.registerCommand('api1-gql.generate', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            vscode.window.showErrorMessage('No active editor!');
-            return;
-        }
-
+    let disposable = vscode.commands.registerCommand('api2gql.generate', async () => {
         try {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showInformationMessage('No editor is active');
+                return;
+            }
+
             const document = editor.document;
-            const text = document.getText();
+            const jsonContent = document.getText();
+            const apiSpec: ApiDoc = JSON.parse(jsonContent);
 
-            const generator = new Api1GqlGenerator();
-            const result = generator.generate(text);
+            const currentDir = path.dirname(document.uri.fsPath);
+            const currentFileName = path.basename(document.uri.fsPath, '.json');
 
-            // 创建新的输出文件
-            const workspaceEdit = new vscode.WorkspaceEdit();
-            
-            // GraphQL 查询
-            const gqlUri = vscode.Uri.file(document.uri.fsPath + '.graphql');
-            workspaceEdit.createFile(gqlUri, { overwrite: true });
-            workspaceEdit.insert(gqlUri, new vscode.Position(0, 0), result.gql);
+            // 初始化生成器
+            const gqlGenerator = new GqlGenerator();
+            const resolverGenerator = new ResolverGenerator();
+            const typeDefsGenerator = new TypeDefsGenerator();
 
-            // TypeScript 类型定义
-            const typedefsUri = vscode.Uri.file(document.uri.fsPath + '.types.ts');
-            workspaceEdit.createFile(typedefsUri, { overwrite: true });
-            workspaceEdit.insert(typedefsUri, new vscode.Position(0, 0), result.typeDefs);
+            // 生成内容
+            const gqlContent = gqlGenerator.generate(apiSpec);
+            const resolverContent = `${RESOLVER_IMPORTS}\n\n${resolverGenerator.generate(apiSpec)}`;
+            const typeDefsContent = `${TYPEDEFS_IMPORTS}\n\n${typeDefsGenerator.generate(apiSpec)}`;
 
-            // Resolver
-            const resolverUri = vscode.Uri.file(document.uri.fsPath + '.resolver.ts');
-            workspaceEdit.createFile(resolverUri, { overwrite: true });
-            workspaceEdit.insert(resolverUri, new vscode.Position(0, 0), result.resolver);
+            // 生成文件
+            const files = [
+                {
+                    path: path.join(currentDir, 'resolvers.ts'),
+                    content: resolverContent
+                },
+                {
+                    path: path.join(currentDir, 'typeDefs.ts'),
+                    content: typeDefsContent
+                },
+                {
+                    path: path.join(currentDir, `${currentFileName}.gql`),
+                    content: gqlContent
+                }
+            ];
 
-            await vscode.workspace.applyEdit(workspaceEdit);
-            vscode.window.showInformationMessage('GraphQL code generated successfully!');
+            // 写入文件
+            await Promise.all(
+                files.map(file => 
+                    vscode.workspace.fs.writeFile(
+                        vscode.Uri.file(file.path),
+                        Buffer.from(file.content, 'utf8')
+                    )
+                )
+            );
 
+            vscode.window.showInformationMessage('GraphQL files generated successfully!');
         } catch (error) {
-            vscode.window.showErrorMessage(`Failed to generate GraphQL: ${error}`);
+            vscode.window.showErrorMessage(`Error: ${(error as any).message}`);
+            console.error(error);
         }
     });
 
