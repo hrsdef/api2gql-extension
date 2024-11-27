@@ -1,0 +1,128 @@
+import { ApiDoc, ArrayObject } from './types';
+
+export class GqlGenerator {
+    private generateGqlType(paramType: string): string {
+        const typeMapping: { [key: string]: string } = {
+            'string': 'String',
+            'number': 'Float',
+            'boolean': 'Boolean'
+        };
+        return typeMapping[paramType.toLowerCase()] || 'String';
+    }
+
+    private findArrayObjects(obj: Record<string, any>, parentKey: string = ""): ArrayObject[] {
+        const arrayObjects: ArrayObject[] = [];
+        for (const [key, value] of Object.entries(obj)) {
+            if (typeof value === 'object' && !Array.isArray(value)) {
+                arrayObjects.push(...this.findArrayObjects(value, key));
+            } else if (Array.isArray(value) && typeof value[0] === 'object') {
+                arrayObjects.push({
+                    name: key,
+                    parent: parentKey,
+                    fields: value[0]
+                });
+                arrayObjects.push(...this.findArrayObjects(value[0], key));
+            }
+        }
+        return arrayObjects;
+    }
+
+    private generateFragment(arrayObj: ArrayObject, apiName: string): string {
+        const baseName = `Res${apiName}`;
+        const fragmentName = `${arrayObj.name}Data`;
+        const typeName = `${baseName}${arrayObj.name}Item`;
+        
+        const fields: string[] = [];
+        
+        for (const [key, value] of Object.entries(arrayObj.fields)) {
+            if (typeof value === 'object' && !Array.isArray(value)) {
+                // 处理嵌套对象
+                const subFields = Object.keys(value).map(subKey => `      ${subKey}`);
+                fields.push(`    ${key} {\n${subFields.join('\n')}\n    }`);
+            } else if (Array.isArray(value) && typeof value[0] === 'object') {
+                // 处理数组对象，使用fragment引用
+                fields.push(`    ${key} {\n      ...${key}Data\n    }`);
+            } else {
+                // 处理基本类型
+                fields.push(`    ${key}`);
+            }
+        }
+        
+        return `fragment ${fragmentName} on ${typeName} {
+${fields.join('\n')}
+}`;
+    }
+
+    private generateResponseFields(resp: Record<string, any>, indent: number = 2): string {
+        const fields: string[] = [];
+        const spaces = '  '.repeat(indent);
+        
+        for (const [key, value] of Object.entries(resp)) {
+            if (typeof value === 'object' && !Array.isArray(value)) {
+                // 处理嵌套对象
+                const subFields = this.generateResponseFields(value, indent + 2);
+                fields.push(`${spaces}${key} {\n${subFields}\n${spaces}}`);
+            } else if (Array.isArray(value)) {
+                if (typeof value[0] === 'object') {
+                    // 处理数组对象，使用fragment引用
+                    fields.push(`${spaces}${key} {\n${spaces}  ...${key}Data\n${spaces}}`);
+                } else {
+                    // 处理基本类型数组
+                    fields.push(`${spaces}${key}`);
+                }
+            } else {
+                // 处理基本类型
+                fields.push(`${spaces}${key}`);
+            }
+        }
+        
+        return fields.join('\n');
+    }
+
+    public generate(yamlDoc: ApiDoc): string {
+        const apiName = yamlDoc.API_NAME.toLowerCase();
+        const params: string[] = [];
+        const args: string[] = [];
+        
+        // 查找所有数组对象并生成Fragment
+        const arrayObjects = this.findArrayObjects(yamlDoc.RESPONSE);
+        const fragments = arrayObjects.map(obj => this.generateFragment(obj, apiName));
+
+        // 生成参数部分
+        for (const param of yamlDoc.PARAMETERS) {
+            const [paramDef] = param.split('(');
+            const paramName = paramDef.trim();
+            const paramType = param.match(/\((.*?),/)?.[1].trim() || 'string';
+            const isRequired = param.includes('required');
+
+            let gqlType = this.generateGqlType(paramType);
+            if (isRequired) {
+                gqlType += '!';
+            }
+
+            params.push(`$${paramName}: ${gqlType}`);
+            args.push(`${paramName}: $${paramName}`);
+        }
+
+        // 生成响应字段
+        const responseFields = this.generateResponseFields(yamlDoc.RESPONSE);
+
+        // 构建主查询
+        const query = `query ${apiName}(
+  ${params.join(',\n  ')}
+) {
+  ${apiName}(
+    ${args.join(',\n    ')}
+  ) {
+${responseFields}
+  }
+}`;
+
+         // 如果有Fragment定义，添加到查询后面
+        if (fragments.length > 0) {
+            return `${query}\n\n${fragments.join('\n\n')}`;
+        }
+
+            return query;
+        }
+}

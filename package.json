@@ -22,7 +22,7 @@
         "menus": {
             "editor/context": [
                 {
-                    "when": "editorLangId == yaml",
+                    "when": "editorLangId == json",
                     "command": "api2gql.generate",
                     "group": "navigation"
                 }
@@ -31,9 +31,9 @@
         "keybindings": [
             {
                 "command": "api2gql.generate",
-                "key": "ctrl+shift+g",
-                "mac": "cmd+shift+g",
-                "when": "editorLangId == yaml"
+                "key": "ctrl+shift+k",
+                "mac": "cmd+shift+k",
+                "when": "editorLangId == json"
             }
         ]
     },
