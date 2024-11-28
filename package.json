@@ -2,7 +2,7 @@
     "name": "api2gql",
     "displayName": "Api2Gql",
     "description": "主要用于Api文档转换GraphQL以及typeDef、resolver格式。",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "publisher": "api2gql",
     "engines": {
         "vscode": "^1.60.0"
