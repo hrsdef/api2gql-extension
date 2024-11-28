@@ -11,7 +11,7 @@ export class ${API_NAME}Resolver {
   @Query((returns) => Res${API_NAME})
   async ${API_NAME.toLowerCase()}(
     @Ctx() ctx: Context,
-    @Args() { ${paramsObj} }: ${API_NAME}Params
+    @Args() { ${paramsObj} }: RequestParams
   ): Promise<Res${API_NAME} | undefined> {
     const res = await requestAPI(ctx, '${API_NAME}', '${METHOD}', { ${paramsObj} });
     return res.data;

@@ -46,7 +46,7 @@ export class TypeDefsGenerator {
         const { API_NAME, PARAMETERS, RESPONSE } = yamlDoc;
 
         // Generate params class
-        let paramClass = `@ArgsType()\nexport class ${API_NAME}Params {\n`;
+        let paramClass = `@ArgsType()\nexport class RequestParams {\n`;
         for (const param of PARAMETERS) {
             const [paramName, paramType] = param.split('(');
             const isRequired = param.includes('required');

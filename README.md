@@ -12,7 +12,7 @@
 
 ## 使用方法
 
-1. 打开 YAML 格式的 API 文档
+1. 打开 JSON 格式的 API 文档
 2. 右键选择 "Generate GraphQL from ApiDoc" 或使用快捷键
 3. 生成的文件将自动保存在相同目录下
 
