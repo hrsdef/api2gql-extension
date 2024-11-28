@@ -37,7 +37,7 @@ export class TypeDefsGenerator {
         
         // 如果有嵌套类型定义，确保它们之间有换行符
         return typeDefinitions.length > 0 
-            ? typeDefinitions.join('\n\n') + '\n\n' + classDef 
+            ? typeDefinitions.join('\n') + '\n' + classDef 
             : classDef;
     }
 
