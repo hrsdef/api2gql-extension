@@ -5,10 +5,10 @@ import { ResolverGenerator } from './utils/resolverGenerator';
 import { TypeDefsGenerator } from './utils/typeDefsGenerator';
 import { ApiDoc } from './utils/types';
 
-const RESOLVER_IMPORTS = [
+const getResolverImports = (apiSpec: ApiDoc) => [
     "import { Query, Ctx, Args, Resolver } from 'type-graphql';",
-    "import { RequestParams } from './typeDefs';",
-    "import { requestAPI } from '../../utils/request';",
+    `import { RequestParams, Res${apiSpec.API_NAME}  } from './typeDefs';`,
+    "import { requestAPI, } from '../../utils/request';",
     "import { Context } from 'overlord-server';"
 ].join('\n');
 
@@ -39,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
 
             // 生成内容
             const gqlContent = gqlGenerator.generate(apiSpec);
-            const resolverContent = `${RESOLVER_IMPORTS}\n\n${resolverGenerator.generate(apiSpec)}`;
+            const resolverContent = `${getResolverImports(apiSpec)}\n\n${resolverGenerator.generate(apiSpec)}`;
             const typeDefsContent = `${TYPEDEFS_IMPORTS}\n\n${typeDefsGenerator.generate(apiSpec)}`;
 
             // 生成文件
