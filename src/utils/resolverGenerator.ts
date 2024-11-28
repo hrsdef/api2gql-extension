@@ -17,7 +17,7 @@ export class ResolverGenerator {
 
         return `@Resolver((of) => Res${API_NAME})
 export class ${API_NAME}Resolver {
-${this.indent}@${decoratorType}(((returns) => Res${API_NAME})
+${this.indent}@${decoratorType}((returns) => Res${API_NAME})
 ${this.indent}async ${API_NAME.toLowerCase()}(
 ${this.indent}${this.indent}@Ctx() ctx: Context,
 ${this.indent}${this.indent}@Args() { ${paramsObj} }: RequestParams
