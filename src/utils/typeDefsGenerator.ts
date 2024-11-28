@@ -30,8 +30,15 @@ export class TypeDefsGenerator {
                 classDef += `${this.indent}@Field({ nullable: true })\n${this.indent}${key}?: ${tsType};\n\n`;
             }
         }
+
+        // 移除最后一个多余的换行符
+        classDef = classDef.replace(/\n\n$/, '\n');
+        classDef += '}\n';
         
-        return typeDefinitions.join('\n') + classDef + '}\n';
+        // 如果有嵌套类型定义，确保它们之间有换行符
+        return typeDefinitions.length > 0 
+            ? typeDefinitions.join('\n\n') + '\n\n' + classDef 
+            : classDef;
     }
 
     private generateGqlType(paramType: string): string {
@@ -51,6 +58,9 @@ export class TypeDefsGenerator {
     public generate(yamlDoc: ApiDoc): string {
         const { API_NAME, PARAMETERS, RESPONSE } = yamlDoc;
 
+        // Generate response classes
+        const responseClass = this.generateNestedTypes(RESPONSE, `Res${API_NAME}`);
+
         // Generate params class
         let paramClass = `@ArgsType()\nexport class RequestParams {\n`;
         for (const param of PARAMETERS) {
@@ -61,11 +71,11 @@ export class TypeDefsGenerator {
             paramClass += `${this.indent}@Field(${isRequired ? '' : '{ nullable: true }'})\n`;
             paramClass += `${this.indent}${paramName.trim()}${isRequired ? '!' : '?'}: ${tsType};\n\n`;
         }
+
+        // 移除最后一个多余的换行符
+        paramClass = paramClass.replace(/\n\n$/, '\n');
         paramClass += '}\n\n';
 
-        // Generate response classes
-        const responseClass = this.generateNestedTypes(RESPONSE, `Res${API_NAME}`);
-
-        return paramClass + responseClass;
+        return responseClass + '\n' + paramClass;
     }
 }
