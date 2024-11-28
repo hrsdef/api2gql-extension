@@ -85,6 +85,9 @@ ${fields.join('\n')}
         const apiName = yamlDoc.API_NAME.toLowerCase();
         const params: string[] = [];
         const args: string[] = [];
+
+        // 根据 HTTP 方法决定使用 query 还是 mutation
+        const operationType = yamlDoc.METHOD.toUpperCase() === 'GET' ? 'query' : 'mutation';
         
         // 查找所有数组对象并生成Fragment
         const arrayObjects = this.findArrayObjects(yamlDoc.RESPONSE);
@@ -106,11 +109,8 @@ ${fields.join('\n')}
             args.push(`${this.indent}${paramName}: $${paramName}`);
         }
 
-        // 生成响应字段
-        // const responseFields = this.generateResponseFields(yamlDoc.RESPONSE);
-
         // 构建主查询
-        const query = `query ${apiName}(
+        const query = `${operationType} ${apiName}(
 ${params.join(',\n')}
 ) {
 ${this.indent}${apiName}(

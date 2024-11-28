@@ -3,7 +3,7 @@ import { Api1GqlGenerator } from './generator';
 // 测试数据
 const testApiDoc = {
     "API_NAME": "DescribeLocalVolumes",
-    "METHOD": "GET",
+    "METHOD": "POST",
     "PARAMETERS": [
       "Action (string, required)",
       "Version (string, required)",

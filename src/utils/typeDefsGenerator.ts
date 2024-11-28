@@ -74,7 +74,7 @@ export class TypeDefsGenerator {
 
         // 移除最后一个多余的换行符
         paramClass = paramClass.replace(/\n\n$/, '\n');
-        paramClass += '}\n\n';
+        paramClass += '}\n';
 
         return responseClass + '\n' + paramClass;
     }
