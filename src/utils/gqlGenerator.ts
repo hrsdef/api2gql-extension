@@ -1,6 +1,12 @@
 import { ApiDoc, ArrayObject } from './types';
 
 export class GqlGenerator {
+    private indent: string;
+
+    constructor(indent: string = '    ') {
+        this.indent = indent;
+    }
+
     private generateGqlType(paramType: string): string {
         const typeMapping: { [key: string]: string } = {
             'string': 'String',
@@ -37,14 +43,14 @@ export class GqlGenerator {
         for (const [key, value] of Object.entries(arrayObj.fields)) {
             if (typeof value === 'object' && !Array.isArray(value)) {
                 // 处理嵌套对象
-                const subFields = Object.keys(value).map(subKey => `      ${subKey}`);
-                fields.push(`    ${key} {\n${subFields.join('\n')}\n    }`);
+                const subFields = Object.keys(value).map(subKey => `${this.indent}${this.indent}${subKey}`);
+                fields.push(`${this.indent}${key} {\n${subFields.join('\n')}\n${this.indent}}`);
             } else if (Array.isArray(value) && typeof value[0] === 'object') {
                 // 处理数组对象，使用fragment引用
-                fields.push(`    ${key} {\n      ...${key}Data\n    }`);
+                fields.push(`${this.indent}${key} {\n${this.indent}${this.indent}...${key}Data\n${this.indent}}`);
             } else {
                 // 处理基本类型
-                fields.push(`    ${key}`);
+                fields.push(`${this.indent}${key}`);
             }
         }
         
@@ -53,26 +59,22 @@ ${fields.join('\n')}
 }`;
     }
 
-    private generateResponseFields(resp: Record<string, any>, indent: number = 2): string {
+    private generateResponseFields(resp: Record<string, any>, indentLevel: number = 2): string {
         const fields: string[] = [];
-        const spaces = '  '.repeat(indent);
+        const currentIndent = this.indent.repeat(indentLevel);
         
         for (const [key, value] of Object.entries(resp)) {
             if (typeof value === 'object' && !Array.isArray(value)) {
-                // 处理嵌套对象
-                const subFields = this.generateResponseFields(value, indent + 2);
-                fields.push(`${spaces}${key} {\n${subFields}\n${spaces}}`);
+                const subFields = this.generateResponseFields(value, indentLevel + 1);
+                fields.push(`${currentIndent}${key} {\n${subFields}\n${currentIndent}}`);
             } else if (Array.isArray(value)) {
                 if (typeof value[0] === 'object') {
-                    // 处理数组对象，使用fragment引用
-                    fields.push(`${spaces}${key} {\n${spaces}  ...${key}Data\n${spaces}}`);
+                    fields.push(`${currentIndent}${key} {\n${currentIndent}${this.indent}...${key}Data\n${currentIndent}}`);
                 } else {
-                    // 处理基本类型数组
-                    fields.push(`${spaces}${key}`);
+                    fields.push(`${currentIndent}${key}`);
                 }
             } else {
-                // 处理基本类型
-                fields.push(`${spaces}${key}`);
+                fields.push(`${currentIndent}${key}`);
             }
         }
         
@@ -100,22 +102,22 @@ ${fields.join('\n')}
                 gqlType += '!';
             }
 
-            params.push(`$${paramName}: ${gqlType}`);
-            args.push(`${paramName}: $${paramName}`);
+            params.push(`${this.indent}$${paramName}: ${gqlType}`);
+            args.push(`${this.indent}${paramName}: $${paramName}`);
         }
 
         // 生成响应字段
-        const responseFields = this.generateResponseFields(yamlDoc.RESPONSE);
+        // const responseFields = this.generateResponseFields(yamlDoc.RESPONSE);
 
         // 构建主查询
         const query = `query ${apiName}(
-  ${params.join(',\n  ')}
+${params.join(',\n')}
 ) {
-  ${apiName}(
-    ${args.join(',\n    ')}
-  ) {
-${responseFields}
-  }
+${this.indent}${apiName}(
+${args.join(',\n')}
+${this.indent}) {
+${this.generateResponseFields(yamlDoc.RESPONSE)}
+${this.indent}}
 }`;
 
          // 如果有Fragment定义，添加到查询后面

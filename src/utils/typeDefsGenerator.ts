@@ -1,6 +1,12 @@
 import { ApiDoc } from './types';
 
 export class TypeDefsGenerator {
+    private indent: string;
+
+    constructor(indent: string = '    ') {
+        this.indent = indent;
+    }
+
     private generateNestedTypes(obj: Record<string, any>, baseName: string): string {
         let classDef = `@ObjectType()\nexport class ${baseName} {\n`;
         const typeDefinitions: string[] = [];
@@ -9,19 +15,19 @@ export class TypeDefsGenerator {
             if (typeof value === 'object' && !Array.isArray(value)) {
                 const nestedTypeName = `${baseName}${key}`;
                 typeDefinitions.push(this.generateNestedTypes(value, nestedTypeName));
-                classDef += `  @Field(() => ${nestedTypeName}, { nullable: true })\n  ${key}?: ${nestedTypeName};\n\n`;
+                classDef += `${this.indent}@Field(() => ${nestedTypeName}, { nullable: true })\n${this.indent}${key}?: ${nestedTypeName};\n\n`;
             } else if (Array.isArray(value)) {
                 if (typeof value[0] === 'object') {
                     const nestedTypeName = `${baseName}${key}Item`;
                     typeDefinitions.push(this.generateNestedTypes(value[0], nestedTypeName));
-                    classDef += `  @Field(() => [${nestedTypeName}], { nullable: true })\n  ${key}?: ${nestedTypeName}[];\n\n`;
+                    classDef += `${this.indent}@Field(() => [${nestedTypeName}], { nullable: true })\n${this.indent}${key}?: ${nestedTypeName}[];\n\n`;
                 } else {
                     const tsType = typeof value[0];
-                    classDef += `  @Field(() => [${tsType}], { nullable: true })\n  ${key}?: ${tsType}[];\n\n`;
+                    classDef += `${this.indent}@Field(() => [${tsType}], { nullable: true })\n${this.indent}${key}?: ${tsType}[];\n\n`;
                 }
             } else {
                 const tsType = typeof value;
-                classDef += `  @Field({ nullable: true })\n  ${key}?: ${tsType};\n\n`;
+                classDef += `${this.indent}@Field({ nullable: true })\n${this.indent}${key}?: ${tsType};\n\n`;
             }
         }
         
@@ -52,8 +58,8 @@ export class TypeDefsGenerator {
             const isRequired = param.includes('required');
             const tsType = this.generateGqlType(paramType.split(',')[0].trim());
             
-            paramClass += `  @Field(${isRequired ? '' : '{ nullable: true }'})\n`;
-            paramClass += `  ${paramName.trim()}${isRequired ? '!' : '?'}: ${tsType};\n\n`;
+            paramClass += `${this.indent}@Field(${isRequired ? '' : '{ nullable: true }'})\n`;
+            paramClass += `${this.indent}${paramName.trim()}${isRequired ? '!' : '?'}: ${tsType};\n\n`;
         }
         paramClass += '}\n\n';
 

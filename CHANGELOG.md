@@ -1,9 +1,4 @@
 # Change Log
 
-All notable changes to the "api2gql" extension will be documented in this file.
+## v0.1.3 修复缩进问题 目前采用2个TAB缩进
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release

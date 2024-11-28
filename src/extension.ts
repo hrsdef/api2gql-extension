@@ -16,6 +16,8 @@ const TYPEDEFS_IMPORTS = [
     "import { Field, ObjectType, ArgsType, InputType } from 'type-graphql';"
 ].join('\n');
 
+const INDENT = '    '; 
+
 export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('api2gql.generate', async () => {
         try {
@@ -33,9 +35,9 @@ export function activate(context: vscode.ExtensionContext) {
             const currentFileName = path.basename(document.uri.fsPath, '.json');
 
             // 初始化生成器
-            const gqlGenerator = new GqlGenerator();
-            const resolverGenerator = new ResolverGenerator();
-            const typeDefsGenerator = new TypeDefsGenerator();
+            const gqlGenerator = new GqlGenerator(INDENT);
+            const resolverGenerator = new ResolverGenerator(INDENT);
+            const typeDefsGenerator = new TypeDefsGenerator(INDENT);
 
             // 生成内容
             const gqlContent = gqlGenerator.generate(apiSpec);

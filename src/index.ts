@@ -5,30 +5,48 @@ const testApiDoc = {
     "API_NAME": "DescribeLocalVolumes",
     "METHOD": "GET",
     "PARAMETERS": [
-        "Action (string, required)",
-        "Version (string, required)",
-        "InstanceName (string, optional)",
-        "Marker (number, optional)",
-        "MaxResults (number, optional)"
+      "Action (string, required)",
+      "Version (string, required)",
+      "InstanceName (string, optional)",
+      "Marker (number, optional)",
+      "MaxResults (number, optional)",
+      "test (boolean, optional)"
     ],
     "RESPONSE": {
-        "RequestId": "string",
-        "Marker": "number",
-        "InstanceList": [
+      "RequestId": "string",
+      "Marker": "number",
+      "MarkerCount": "number",
+      "InstanceList": [
+        {
+          "InstanceName": "string",
+          "InstanceStatus": "string",
+          "Memory": "number",
+          "CPU": "string",
+          "Tag": "string",
+          "arrayObj": {
+            "arrayObjName": "string",
+            "arrayObjAge": "number"
+          },
+          "arrayList": [
             {
-                "InstanceName": "string",
-                "InstanceStatus": "string",
-                "Memory": "number",
-                "CPU": "string",
-                "Tag": "string",
-                "Details": {
-                    "Name": "string",
-                    "Age": "number"
-                }
+              "arrayListName": "string",
+              "arrayListAge": "number",
             }
-        ]
+          ]
+        }
+      ],
+      "DBList": [
+        {
+          "DBname": "string",
+          "DBstatus": "string"
+        }
+      ],
+      "UserInfo": {
+        "name": "string",
+        "age": "number"
+      }
     }
-};
+}
 
 // 运行生成器
 const generator = new Api1GqlGenerator();
