@@ -15,13 +15,13 @@ export class ResolverGenerator {
         // 根据 HTTP 方法决定使用 Query 还是 Mutation
         const decoratorType = METHOD.toUpperCase() === 'GET' ? 'Query' : 'Mutation';
 
-        return `@Resolver((of) => Res${API_NAME})
-export class ${API_NAME}Resolver {
-${this.indent}@${decoratorType}((returns) => Res${API_NAME})
-${this.indent}async ${API_NAME.toLowerCase()}(
+        return `@Resolver((of) => ${API_NAME}Res)
+export class Resolvers {
+${this.indent}@${decoratorType}((returns) => ${API_NAME}Res)
+${this.indent}async ${API_NAME}(
 ${this.indent}${this.indent}@Ctx() ctx: Context,
 ${this.indent}${this.indent}@Args() { ${paramsObj} }: RequestParams
-${this.indent}): Promise<Res${API_NAME} | undefined> {
+${this.indent}): Promise<${API_NAME}Res | undefined> {
 ${this.indent}${this.indent}const res = await requestAPI(ctx, '${API_NAME}', '${METHOD}', { ${paramsObj} });
 ${this.indent}${this.indent}return res.data;
 ${this.indent}}

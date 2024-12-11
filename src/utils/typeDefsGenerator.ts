@@ -7,19 +7,20 @@ export class TypeDefsGenerator {
         this.indent = indent;
     }
 
-    private generateNestedTypes(obj: Record<string, any>, baseName: string): string {
-        let classDef = `@ObjectType()\nexport class ${baseName} {\n`;
+    private generateNestedTypes(obj: Record<string, any>, baseName: string, isRoot: boolean = true): string {
+        const className = isRoot ? `${baseName}Res` : baseName;
+        let classDef = `@ObjectType()\nexport class ${className} {\n`;
         const typeDefinitions: string[] = [];
 
         for (const [key, value] of Object.entries(obj)) {
             if (typeof value === 'object' && !Array.isArray(value)) {
-                const nestedTypeName = `${baseName}${key}`;
-                typeDefinitions.push(this.generateNestedTypes(value, nestedTypeName));
+                const nestedTypeName = `${key}`;
+                typeDefinitions.push(this.generateNestedTypes(value, nestedTypeName, false));
                 classDef += `${this.indent}@Field(() => ${nestedTypeName}, { nullable: true })\n${this.indent}${key}?: ${nestedTypeName};\n\n`;
             } else if (Array.isArray(value)) {
                 if (typeof value[0] === 'object') {
-                    const nestedTypeName = `${baseName}${key}Item`;
-                    typeDefinitions.push(this.generateNestedTypes(value[0], nestedTypeName));
+                    const nestedTypeName = `${key}`;
+                    typeDefinitions.push(this.generateNestedTypes(value[0], nestedTypeName, false));
                     classDef += `${this.indent}@Field(() => [${nestedTypeName}], { nullable: true })\n${this.indent}${key}?: ${nestedTypeName}[];\n\n`;
                 } else {
                     const tsType = typeof value[0];
@@ -59,7 +60,7 @@ export class TypeDefsGenerator {
         const { API_NAME, PARAMETERS, RESPONSE } = yamlDoc;
 
         // Generate response classes
-        const responseClass = this.generateNestedTypes(RESPONSE, `Res${API_NAME}`);
+        const responseClass = this.generateNestedTypes(RESPONSE, `${API_NAME}`);
 
         // Generate params class
         let paramClass = `@ArgsType()\nexport class RequestParams {\n`;

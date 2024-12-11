@@ -34,9 +34,9 @@ export class GqlGenerator {
     }
 
     private generateFragment(arrayObj: ArrayObject, apiName: string): string {
-        const baseName = `Res${apiName}`;
+        const baseName = `${apiName}`;
         const fragmentName = `${arrayObj.name}Data`;
-        const typeName = `${baseName}${arrayObj.name}Item`;
+        const typeName = `${arrayObj.name}`;
         
         const fields: string[] = [];
         
@@ -82,7 +82,7 @@ ${fields.join('\n')}
     }
 
     public generate(yamlDoc: ApiDoc): string {
-        const apiName = yamlDoc.API_NAME.toLowerCase();
+        const apiName = yamlDoc.API_NAME;
         const params: string[] = [];
         const args: string[] = [];
 

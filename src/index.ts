@@ -2,15 +2,12 @@ import { Api1GqlGenerator } from './generator';
 
 // 测试数据
 const testApiDoc = {
-    "API_NAME": "DescribeLocalVolumes",
-    "METHOD": "POST",
+    "API_NAME": "ClusterInstanceList",
+    "METHOD": "GET",
     "PARAMETERS": [
-      "Action (string, required)",
-      "Version (string, required)",
       "InstanceName (string, optional)",
       "Marker (number, optional)",
       "MaxResults (number, optional)",
-      "test (boolean, optional)"
     ],
     "RESPONSE": {
       "RequestId": "string",
@@ -22,15 +19,14 @@ const testApiDoc = {
           "InstanceStatus": "string",
           "Memory": "number",
           "CPU": "string",
-          "Tag": "string",
-          "arrayObj": {
-            "arrayObjName": "string",
-            "arrayObjAge": "number"
+          "Tags": {
+            "TagName": "string",
+            "TagValue": "number"
           },
-          "arrayList": [
+          "SubInstance": [
             {
-              "arrayListName": "string",
-              "arrayListAge": "number",
+              "SubInstanceNmae": "string",
+              "SubInstanceStatus": "string",
             }
           ]
         }
